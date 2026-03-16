@@ -1,0 +1,29 @@
+---
+driver:
+  name: tfe
+  client: /usr/local/bin/terraform_1.12.2
+    
+provisioner:
+  name: tfe
+
+verifier:
+  name: tfe
+  systems:
+  - name: default
+    backend: gcp
+
+platforms:
+  - name: default
+
+# be aware, kitchen runs the below suites in the order they're listed in the YAML
+suites:
+  # setup the project
+  - name: sensitive
+    driver:
+      name: tfe
+      root_module_directory: test/fixtures/sensitive
+
+  - name: main
+    driver:
+     name: tfe
+     root_module_directory: test/fixtures/main

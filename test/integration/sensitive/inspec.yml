@@ -1,0 +1,27 @@
+name: gcp-profile
+title: GCP InSpec Profile
+summary: An InSpec Compliance Profile For GCP
+version: 0.1.0
+inspec_version: '>= 2.3.5'
+
+inputs:
+- name: src_host_project_id
+  required: true
+  description: 'The source GCP project identifier'
+  type: string
+- name: dst_host_project_id
+  required: true
+  description: 'The destination GCP project identifier'
+  type: string
+- name: secret_project_id
+  required: true
+  description: 'The GCP project identifier that stores the VPN secrets'
+  type: string
+
+depends:
+- name: inspec-gcp
+  url: https://github.com/inspec/inspec-gcp/archive/v1.8.0.zip
+  #path: /tmp/inspec-gcp-1.8.0
+  
+supports:
+- platform: gcp

@@ -1,0 +1,54 @@
+name: gcp-profile
+title: GCP InSpec Profile
+summary: An InSpec Compliance Profile For GCP
+version: 0.1.0
+inspec_version: '>= 2.3.5'
+
+inputs:
+- name: src_project_id
+  required: true
+  description: 'The source GCP project identifier.'
+  type: string
+- name: dst_project_id
+  required: true
+  description: 'The destination GCP project identifier.'
+  type: string
+- name: src_region
+  required: true
+  description: 'The source region.'
+  type: string
+- name: dst_region
+  required: true
+  description: 'The destination region.'
+  type: string
+- name: src_router_names
+  required: true
+  description: 'The expected source Cloud Router names.'
+  type: array
+- name: dst_router_names
+  required: true
+  description: 'The expected destination Cloud Router names.'
+  type: array
+- name: src_gateway_names
+  required: true
+  description: 'The expected source HA VPN gateway names.'
+  type: array
+- name: dst_gateway_names
+  required: true
+  description: 'The expected destination HA VPN gateway names.'
+  type: array
+- name: src_tunnel_names
+  required: true
+  description: 'The expected source VPN tunnel names.'
+  type: array
+- name: dst_tunnel_names
+  required: true
+  description: 'The expected destination VPN tunnel names.'
+  type: array
+
+depends:
+- name: inspec-gcp
+  url: https://github.com/inspec/inspec-gcp/archive/v1.8.0.zip
+
+supports:
+- platform: gcp
