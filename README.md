@@ -56,12 +56,12 @@ module "vpn_fabric" {
                     {
                       tunnel_name     = "if0"
                       interface       = 0
-                      bgp_peer_routes = "10.10.0.0/24"
+                      bgp_peer_routes = ["10.10.0.0/24"]
                     },
                     {
                       tunnel_name     = "if1"
                       interface       = 1
-                      bgp_peer_routes = "10.10.1.0/24"
+                      bgp_peer_routes = ["10.10.1.0/24", "10.10.2.0/24"]
                     }
                   ]
                 }
@@ -89,12 +89,12 @@ module "vpn_fabric" {
                     {
                       tunnel_name     = "if0"
                       interface       = 0
-                      bgp_peer_routes = "192.168.10.0/24"
+                      bgp_peer_routes = ["192.168.10.0/24"]
                     },
                     {
                       tunnel_name     = "if1"
                       interface       = 1
-                      bgp_peer_routes = "192.168.11.0/24"
+                      bgp_peer_routes = ["192.168.11.0/24", "192.168.12.0/24"]
                     }
                   ]
                 }
@@ -145,7 +145,7 @@ Tunnel fields:
 
 - `tunnel_name`
 - `interface`
-- `bgp_peer_routes`
+- `bgp_peer_routes`: one or more CIDRs as `list(string)`
 - optional `secret`
 - optional `secret_version`
 
