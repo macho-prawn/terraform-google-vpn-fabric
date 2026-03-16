@@ -87,6 +87,23 @@ locals {
     for gateway in local.vpn_details_list : gateway.gateway_key => gateway
   }
 
+  router_map = {
+    for gateway_key, gateway in local.vpn_details_map : gateway_key => {
+      gateway_key  = gateway_key
+      env_key      = gateway.env_key
+      env_name     = gateway.env_name
+      sub_env_name = gateway.sub_env_name
+      gw_name      = gateway.gw_name
+      name         = "cr-${gateway.env_name}-${gateway.gw_index[0]}-${gateway.region_abbr}-${gateway.gw_name}"
+      project      = gateway.project
+      region       = gateway.region
+      network      = gateway.vpc
+      asn          = gateway.asn
+      region_abbr  = gateway.region_abbr
+      org_name     = gateway.org_name
+    }
+  }
+
   gateways_by_env_key = {
     for env_key in distinct([for gateway in local.vpn_details_list : gateway.env_key]) :
     env_key => [for gateway in local.vpn_details_list : gateway if gateway.env_key == env_key]

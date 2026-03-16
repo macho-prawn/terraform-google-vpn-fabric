@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
-## [Unreleased]
+## [1.0.0] - 2026-03-16
 
 ### Added
 
@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added support for per-tunnel or per-project secret resolution via Secret Manager secret name and version references.
 - Added support for one or more advertised BGP peer route CIDRs per tunnel via `bgp_peer_routes = list(string)`.
 - Added outputs for resolved gateway pairs and tunnel pairs.
+- Added a `router_map` output keyed by `gateway_key` for resolved router metadata.
 - Added validation to ensure each `gw_name` is unique within an environment key.
 - Added validation to ensure environment adjacencies only resolve gateway pairs with matching `gw_name` values.
 - Added validation to ensure each tunnel pair resolves both a secret name and secret version.
