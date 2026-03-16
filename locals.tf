@@ -125,12 +125,12 @@ locals {
               asn          = g.asn
               tunnels = {
                 for t in g.tunnels : "${t.interface}" => {
-                  tunnel_name     = t.tunnel_name
-                  tunnel_key      = "tunnel-${t.tunnel_name}"
-                  interface       = t.interface
-                  bgp_peer_routes = t.bgp_peer_routes
-                  t_secret     =  var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret # t.t_secret
-                  t_secret_version  = var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret_version
+                  tunnel_name      = t.tunnel_name
+                  tunnel_key       = "tunnel-${t.tunnel_name}"
+                  interface        = t.interface
+                  bgp_peer_routes  = t.bgp_peer_routes
+                  t_secret         =  var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret # t.t_secret
+                  t_secret_version = var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret_version
                 }
               }
             }
