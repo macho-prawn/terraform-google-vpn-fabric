@@ -51,29 +51,29 @@ locals {
       for e in o.env : flatten([
         for s in e.sub_env : [
           for g in s.gw : {
-            gateway_id         = "${o.org_name}-${e.env_name}-${s.sub_env_name}-${s.region}-gw-${g.gw_name}"
-            org_name           = o.org_name
-            org_secret         = o.org_secret
-            org_secret_version = o.org_secret_version
-            env_name           = e.env_name
-            sub_env_name       = s.sub_env_name
-            env_key            = "${e.env_name}-${s.sub_env_name}"
-            region_abbr        = local.abbr_region[s.region]
-            region             = s.region
-            project            = s.project
-            vpc                = s.vpc
-            gw_name            = g.gw_name
-            gw_index           = regex("-([0-9]+)$", s.vpc)
-            gw_key             = "gw-${g.gw_name}"
-            asn                = g.asn
+            gateway_id             = "${o.org_name}-${e.env_name}-${s.sub_env_name}-${s.region}-gw-${g.gw_name}"
+            org_name               = o.org_name
+            env_name               = e.env_name
+            sub_env_name           = s.sub_env_name
+            env_key                = "${e.env_name}-${s.sub_env_name}"
+            region_abbr            = local.abbr_region[s.region]
+            region                 = s.region
+            project                = s.project.name
+            project_secret         = try(s.project.secret, null)
+            project_secret_version = try(s.project.secret_version, null)
+            vpc                    = s.vpc
+            gw_name                = g.gw_name
+            gw_index               = regex("-([0-9]+)$", s.vpc)
+            gw_key                 = "gw-${g.gw_name}"
+            asn                    = g.asn
             tunnels = {
               for t in g.tunnels : tostring(t.interface) => {
-                tunnel_name      = t.tunnel_name
-                tunnel_key       = "tunnel-${t.tunnel_name}"
-                interface        = t.interface
-                bgp_peer_routes  = t.bgp_peer_routes
-                t_secret         = try(var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret, null)
-                t_secret_version = try(var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret_version, null)
+                tunnel_name           = t.tunnel_name
+                tunnel_key            = "tunnel-${t.tunnel_name}"
+                interface             = t.interface
+                bgp_peer_routes       = t.bgp_peer_routes
+                tunnel_secret         = try(t.secret, null)
+                tunnel_secret_version = try(t.secret_version, null)
               }
             }
           }
@@ -126,10 +126,10 @@ locals {
           peer2_gws                   = gateway_pair.peer2_gws
           peer1_tunnels               = peer1_tunnel
           peer2_tunnels               = gateway_pair.peer2_gws.tunnels[interface]
-          peer1_tunnel_secret         = coalesce(try(peer1_tunnel.t_secret, null), gateway_pair.peer1_gws.org_secret)
-          peer1_tunnel_secret_version = coalesce(try(peer1_tunnel.t_secret_version, null), gateway_pair.peer1_gws.org_secret_version)
-          peer2_tunnel_secret         = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].t_secret, null), gateway_pair.peer2_gws.org_secret)
-          peer2_tunnel_secret_version = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].t_secret_version, null), gateway_pair.peer2_gws.org_secret_version)
+          peer1_tunnel_secret         = coalesce(try(peer1_tunnel.tunnel_secret, null), gateway_pair.peer1_gws.project_secret)
+          peer1_tunnel_secret_version = coalesce(try(peer1_tunnel.tunnel_secret_version, null), gateway_pair.peer1_gws.project_secret_version)
+          peer2_tunnel_secret         = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].tunnel_secret, null), gateway_pair.peer2_gws.project_secret)
+          peer2_tunnel_secret_version = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].tunnel_secret_version, null), gateway_pair.peer2_gws.project_secret_version)
         }
         if contains(keys(gateway_pair.peer2_gws.tunnels), interface)
       ]
@@ -149,9 +149,13 @@ locals {
   tunnel_keys_with_missing_secret = [
     for tunnel_key, tunnel in local.tunnels_map : tunnel_key
     if tunnel.peer1_tunnel_secret == null
+    || tunnel.peer1_tunnel_secret == ""
     || tunnel.peer1_tunnel_secret_version == null
+    || tunnel.peer1_tunnel_secret_version == ""
     || tunnel.peer2_tunnel_secret == null
+    || tunnel.peer2_tunnel_secret == ""
     || tunnel.peer2_tunnel_secret_version == null
+    || tunnel.peer2_tunnel_secret_version == ""
   ]
 
 }

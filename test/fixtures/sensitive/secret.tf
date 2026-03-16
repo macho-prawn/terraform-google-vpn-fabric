@@ -1,6 +1,5 @@
-resource "google_secret_manager_secret" "vpn_preshared_key" {
-  
-  secret_id = "vpn_preshared_key_for_org"
+resource "google_secret_manager_secret" "vpn_preshared_key_project" {
+  secret_id = "vpn_preshared_key_project"
   project   = module.project_for_secrets.project_id
   replication {
     user_managed {
@@ -12,17 +11,13 @@ resource "google_secret_manager_secret" "vpn_preshared_key" {
   depends_on = [module.project_for_secrets]
 }
 
-resource "google_secret_manager_secret_version" "vpn_preshared_key" {  
-
-  secret      = google_secret_manager_secret.vpn_preshared_key.id
-  secret_data = "bumbumbhole" 
-
+resource "google_secret_manager_secret_version" "vpn_preshared_key_project" {
+  secret      = google_secret_manager_secret.vpn_preshared_key_project.id
+  secret_data = "bumbumbhole"
 }
 
-resource "google_secret_manager_secret" "vpn_preshared_key_1" {
- for_each = local.all_envs_map
-
-  secret_id = "vpn_preshared_key_${each.key}"
+resource "google_secret_manager_secret" "vpn_preshared_key_tunnel" {
+  secret_id = "vpn_preshared_key_tunnel"
   project   = module.project_for_secrets.project_id
   replication {
     user_managed {
@@ -34,11 +29,7 @@ resource "google_secret_manager_secret" "vpn_preshared_key_1" {
   depends_on = [module.project_for_secrets]
 }
 
-resource "google_secret_manager_secret_version" "vpn_preshared_key_1" {
-  for_each = local.all_envs_map
-
-  secret      = google_secret_manager_secret.vpn_preshared_key_1[each.key].id
-  secret_data = "million_voices"
+resource "google_secret_manager_secret_version" "vpn_preshared_key_tunnel" {
+  secret      = google_secret_manager_secret.vpn_preshared_key_tunnel.id
+  secret_data = "bumbumbhole"
 }
-
-

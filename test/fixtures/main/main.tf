@@ -12,8 +12,6 @@ data "terraform_remote_state" "sensitive_state" {
 }
 
 module "vpn_infra" {
-  source          = "../../.."
-  vpn_env_details = local.vpn_env_details
-  vpn_preshared_key_1 = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_1
-  vpn_preshared_key = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key
+  source            = "../../.."
+  vpn_env_details   = local.vpn_env_details
 }

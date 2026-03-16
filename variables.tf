@@ -16,15 +16,17 @@ variable "vpn_adjacency" {
 variable "vpn_env_details" {
   type = list(object({
     org_name = string
-    org_secret = optional(string, null)
-    org_secret_version = optional(string, null)
     env = list(object({
       env_name = string
       sub_env = list(object({
         sub_env_name = string
         region       = string
-        project      = string
-        vpc          = string
+        project = object({
+          name           = string
+          secret         = optional(string, null)
+          secret_version = optional(string, null)
+        })
+        vpc = string
         gw = list(object({
           gw_name = string
           asn     = number
@@ -32,8 +34,8 @@ variable "vpn_env_details" {
             tunnel_name     = string
             interface       = number
             bgp_peer_routes = string
-            #t_secret     = optional(string, null)
-            #t_secret_version  = optional(string, null)
+            secret          = optional(string, null)
+            secret_version  = optional(string, null)
           }))
         }))
       }))
@@ -41,23 +43,4 @@ variable "vpn_env_details" {
   }))
   description = "A map of all the Src/Dst HA VPN GW/Tunnels"
   default     = []
-}
-
-variable "vpn_preshared_key" {
-  type = object({
-    secret = string
-    secret_version = string
-  })
-   default = {
-    secret         = ""
-    secret_version = null
-  }
-}
-
-variable "vpn_preshared_key_1" {
-  type = map(object({
-    secret = string
-    secret_version = string
-  }))
-   default = {  }
 }
