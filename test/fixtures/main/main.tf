@@ -12,6 +12,7 @@ data "terraform_remote_state" "sensitive_state" {
 }
 
 module "vpn_infra" {
-  source            = "../../.."
-  vpn_env_details   = local.vpn_env_details
+  source          = "../../.."
+  vpn_adjacency   = local.vpn_adjacency
+  vpn_env_details = local.vpn_env_details
 }

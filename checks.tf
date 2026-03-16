@@ -1,7 +1,14 @@
-check "single_gateway_per_env_key" {
+check "unique_gateway_names_per_env_key" {
   assert {
-    condition     = length(local.env_keys_with_multiple_gateways) == 0
-    error_message = "Each env_key must resolve to exactly one gateway. Duplicate env_key values found for: ${join(", ", local.env_keys_with_multiple_gateways)}"
+    condition     = length(local.duplicate_gateway_names_by_env_key) == 0
+    error_message = "Each env_key must resolve each gw_name exactly once. Duplicate env_key/gw_name values found for: ${join(", ", local.duplicate_gateway_names_by_env_key)}"
+  }
+}
+
+check "matched_gateway_names_per_adjacency" {
+  assert {
+    condition     = length(local.adjacency_keys_with_unmatched_gateways) == 0
+    error_message = "Each adjacency can only pair gateways with matching gw_name values on both sides. Unmatched gateways found for: ${join(", ", local.adjacency_keys_with_unmatched_gateways)}"
   }
 }
 

@@ -52,6 +52,7 @@ locals {
         for s in e.sub_env : [
           for g in s.gw : {
             gateway_id             = "${o.org_name}-${e.env_name}-${s.sub_env_name}-${s.region}-gw-${g.gw_name}"
+            gateway_key            = "${e.env_name}-${s.sub_env_name}-${g.gw_name}"
             org_name               = o.org_name
             env_name               = e.env_name
             sub_env_name           = s.sub_env_name
@@ -83,7 +84,7 @@ locals {
   ])
 
   vpn_details_map = {
-    for gateway in local.vpn_details_list : gateway.gateway_id => gateway
+    for gateway in local.vpn_details_list : gateway.gateway_key => gateway
   }
 
   gateways_by_env_key = {
@@ -91,24 +92,71 @@ locals {
     env_key => [for gateway in local.vpn_details_list : gateway if gateway.env_key == env_key]
   }
 
-  env_keys_with_multiple_gateways = [
-    for env_key, gateways in local.gateways_by_env_key : env_key
-    if length(gateways) > 1
+  gateway_lookup_keys = distinct([
+    for gateway in local.vpn_details_list : "${gateway.env_key}:${gateway.gw_name}"
+  ])
+
+  gateway_lookup_key_counts = {
+    for lookup_key in local.gateway_lookup_keys :
+    lookup_key => length([
+      for gateway in local.vpn_details_list : gateway
+      if "${gateway.env_key}:${gateway.gw_name}" == lookup_key
+    ])
+  }
+
+  duplicate_gateway_names_by_env_key = [
+    for lookup_key, count in local.gateway_lookup_key_counts : lookup_key
+    if count > 1
   ]
 
-  single_gateway_by_env_key = {
-    for env_key, gateways in local.gateways_by_env_key : env_key => gateways[0]
-    if length(gateways) == 1
+  gateways_by_env_key_and_name = {
+    for lookup_key in local.gateway_lookup_keys :
+    lookup_key => one([
+      for gateway in local.vpn_details_list : gateway
+      if "${gateway.env_key}:${gateway.gw_name}" == lookup_key
+    ])
+    if local.gateway_lookup_key_counts[lookup_key] == 1
   }
 
   gateway_map = {
-    for adjkey, adjval in local.vpn_adj_map : adjkey => {
-      adjacency_key = adjkey
-      peer1_gws     = local.single_gateway_by_env_key[adjval.peer1]
-      peer2_gws     = local.single_gateway_by_env_key[adjval.peer2]
+    for gateway_pair in flatten([
+      for adjkey, adjval in local.vpn_adj_map : [
+        for gw_name in setintersection(
+          toset([for gateway in lookup(local.gateways_by_env_key, adjval.peer1, []) : gateway.gw_name]),
+          toset([for gateway in lookup(local.gateways_by_env_key, adjval.peer2, []) : gateway.gw_name])
+          ) : {
+          key           = "${adjkey}-${gw_name}"
+          adjacency_key = adjkey
+          peer1_gws     = local.gateways_by_env_key_and_name["${adjval.peer1}:${gw_name}"]
+          peer2_gws     = local.gateways_by_env_key_and_name["${adjval.peer2}:${gw_name}"]
+        }
+        if contains(keys(local.gateways_by_env_key_and_name), "${adjval.peer1}:${gw_name}")
+        && contains(keys(local.gateways_by_env_key_and_name), "${adjval.peer2}:${gw_name}")
+      ]
+      ]) : gateway_pair.key => {
+      adjacency_key = gateway_pair.adjacency_key
+      peer1_gws     = gateway_pair.peer1_gws
+      peer2_gws     = gateway_pair.peer2_gws
     }
-    if contains(keys(local.single_gateway_by_env_key), adjval.peer1) && contains(keys(local.single_gateway_by_env_key), adjval.peer2)
   }
+
+  adjacency_keys_with_unmatched_gateways = flatten([
+    for adjkey, adjval in local.vpn_adj_map : concat(
+      [
+        for gw_name in setsubtract(
+          toset([for gateway in lookup(local.gateways_by_env_key, adjval.peer1, []) : gateway.gw_name]),
+          toset([for gateway in lookup(local.gateways_by_env_key, adjval.peer2, []) : gateway.gw_name])
+        ) : "${adjkey}:${adjval.peer1}:${gw_name}"
+      ],
+      [
+        for gw_name in setsubtract(
+          toset([for gateway in lookup(local.gateways_by_env_key, adjval.peer2, []) : gateway.gw_name]),
+          toset([for gateway in lookup(local.gateways_by_env_key, adjval.peer1, []) : gateway.gw_name])
+        ) : "${adjkey}:${adjval.peer2}:${gw_name}"
+      ]
+    )
+    if contains(keys(local.gateways_by_env_key), adjval.peer1) && contains(keys(local.gateways_by_env_key), adjval.peer2)
+  ])
 
   tunnels_map = {
     for tunnel_pair in flatten([
