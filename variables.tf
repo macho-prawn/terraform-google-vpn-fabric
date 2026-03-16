@@ -33,7 +33,7 @@ variable "vpn_env_details" {
           tunnels = list(object({
             tunnel_name     = string
             interface       = number
-            bgp_peer_routes = string
+            bgp_peer_routes = list(string)
             secret          = optional(string, null)
             secret_version  = optional(string, null)
           }))

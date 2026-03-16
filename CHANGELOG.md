@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added support for Google Cloud HA VPN Farm defined from Terraform inputs for environment adjacency and nested gateway details.
 - Added support for multiple HA VPN gateways within the same `${env_name}-${sub_env_name}` environment key.
 - Added support for per-tunnel or per-project secret resolution via Secret Manager secret name and version references.
+- Added support for one or more advertised BGP peer route CIDRs per tunnel via `bgp_peer_routes = list(string)`.
 - Added outputs for resolved gateway pairs and tunnel pairs.
 - Added validation to ensure each `gw_name` is unique within an environment key.
 - Added validation to ensure environment adjacencies only resolve gateway pairs with matching `gw_name` values.

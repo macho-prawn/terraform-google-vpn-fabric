@@ -103,8 +103,11 @@ resource "google_compute_router_peer" "peer1_router_peer" {
   interface      = each.value.peer1_tunnels.interface == 0 ? "if-bgp-${google_compute_vpn_tunnel.peer1_tunnel_0[each.key].name}" : "if-bgp-${google_compute_vpn_tunnel.peer1_tunnel_1[each.key].name}"
   peer_asn       = each.value.peer2_gws.asn
   advertise_mode = "CUSTOM"
-  advertised_ip_ranges {
-    range = each.value.peer1_tunnels.bgp_peer_routes
+  dynamic "advertised_ip_ranges" {
+    for_each = each.value.peer1_tunnels.bgp_peer_routes
+    content {
+      range = advertised_ip_ranges.value
+    }
   }
   region = each.value.peer1_gws.region
 }
@@ -129,8 +132,11 @@ resource "google_compute_router_peer" "peer2_router_peer" {
   interface      = each.value.peer2_tunnels.interface == 0 ? "if-bgp-${google_compute_vpn_tunnel.peer2_tunnel_0[each.key].name}" : "if-bgp-${google_compute_vpn_tunnel.peer2_tunnel_1[each.key].name}"
   peer_asn       = each.value.peer1_gws.asn
   advertise_mode = "CUSTOM"
-  advertised_ip_ranges {
-    range = each.value.peer2_tunnels.bgp_peer_routes
+  dynamic "advertised_ip_ranges" {
+    for_each = each.value.peer2_tunnels.bgp_peer_routes
+    content {
+      range = advertised_ip_ranges.value
+    }
   }
   region          = each.value.peer2_gws.region
   ip_address      = google_compute_router_peer.peer1_router_peer[each.key].peer_ip_address
