@@ -19,8 +19,10 @@ check "resolved_tunnel_secrets" {
   }
 }
 
-resource "terraform_data" "resolved_tunnel_secrets_guard" {
-  input = local.tunnel_keys_with_missing_secret
+resource "null_resource" "resolved_tunnel_secrets_guard" {
+  triggers = {
+    missing_tunnel_keys = join(",", local.tunnel_keys_with_missing_secret)
+  }
 
   lifecycle {
     precondition {
