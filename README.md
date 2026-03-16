@@ -155,6 +155,10 @@ Tunnel fields:
 
 Map of resolved gateway pairs keyed by adjacency and `gw_name`. Each value includes the concrete `peer1_gws` and `peer2_gws` objects used to build routers, gateways, and tunnels.
 
+### `router_map`
+
+Map of concrete router definitions keyed by `gateway_key`. Each value includes the resolved router name, project, region, network, ASN, and gateway metadata.
+
 ### `tunnels`
 
 Map of resolved tunnel pairs keyed by adjacency, gateway name, and interface. Each value includes both peer tunnel definitions plus the resolved secret references.
