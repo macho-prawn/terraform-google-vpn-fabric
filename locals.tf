@@ -46,98 +46,112 @@ locals {
     }
   ])...)
 
-  tunnels_map = merge(flatten([
-    for adjkey, adjval in local.vpn_adj_map : [
-      for gw1_key, gw1 in local.vpn_details_map : [
-        for tk_1, t_1 in gw1.tunnels : [
-          for gw2_key, gw2 in local.vpn_details_map : [
-            for o_key, o_val in local.vpn_details_map : [
-            for tk_2, t_2 in gw2.tunnels : {
-              
-              "${t_1.interface}-${adjkey}" = {
-
-                peer1_gws = lookup(local.vpn_details_map, gw1_key, {})
-                peer2_gws = lookup(local.vpn_details_map, gw2_key, {})
-
-                peer1_tunnels = t_1
-                peer2_tunnels = t_2
-                
-                peer1_tunnel_secret = coalesce(try(t_1.t_secret, null), o_val.org_secret) 
-                peer1_tunnel_secret_version = coalesce(try(t_1.t_secret_version, null), o_val.org_secret_version)
-                
-                peer2_tunnel_secret = coalesce(try(t_2.t_secret, null), o_val.org_secret) 
-                peer2_tunnel_secret_version = coalesce(try(t_2.t_secret_version, null), o_val.org_secret_version)
-
-                #tunnel_secret         = var.vpn_preshared_key["${t_1.interface}-${adjkey}"].secret
-                #tunnel_secret_version = var.vpn_preshared_key["${t_1.interface}-${adjkey}"].version
-
-              }
-            } if t_1.interface == t_2.interface 
-            && strcontains(gw1_key, adjval.peer1) 
-            && strcontains(gw2_key, adjval.peer2)
-          ]
-          ]
-        ]
-      ]
-    ]
-  ])...)
-
-  gateway_map = merge(flatten([
-    for adjkey, adjval in local.vpn_adj_map : [
-      for gw1_key, gw1 in local.vpn_details_map : [
-        for gw2_key, gw2 in local.vpn_details_map : {
-          "${adjkey}" = {
-
-            peer1_gw_key = gw1_key
-            peer2_gw_key = gw2_key
-
-            peer1_gws = lookup(local.vpn_details_map, gw1_key, {})
-            peer2_gws = lookup(local.vpn_details_map, gw2_key, {})
-
-          }
-        } if strcontains(gw1_key, adjval.peer1) && strcontains(gw2_key, adjval.peer2)
-      ]
-    ]
-  ])...)
-
-
-  vpn_details_map = merge([
-    for o in var.vpn_env_details : merge([
-      for e in o.env : merge([
-        for s in e.sub_env : merge([
+  vpn_details_list = flatten([
+    for o in var.vpn_env_details : flatten([
+      for e in o.env : flatten([
+        for s in e.sub_env : [
           for g in s.gw : {
-            "${o.org_name}-${e.env_name}-${s.sub_env_name}-${s.region}-gw-${g.gw_name}" = {
-              
-              org_name     = o.org_name
-              org_secret = o.org_secret
-              org_secret_version = o.org_secret_version
-
-              env_name     = e.env_name
-              sub_env_name = s.sub_env_name
-              env_key      = "${e.env_name}-${s.sub_env_name}"
-              region_abbr  = local.abbr_region[s.region]
-              region       = s.region
-              project      = s.project
-              vpc          = s.vpc
-              gw_name      = g.gw_name
-              gw_index     = regex("-([0-9]+)$", s.vpc)
-              gw_key       = "gw-${g.gw_name}"
-              asn          = g.asn
-              tunnels = {
-                for t in g.tunnels : "${t.interface}" => {
-                  tunnel_name      = t.tunnel_name
-                  tunnel_key       = "tunnel-${t.tunnel_name}"
-                  interface        = t.interface
-                  bgp_peer_routes  = t.bgp_peer_routes
-                  t_secret         =  var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret # t.t_secret
-                  t_secret_version = var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret_version
-                }
+            gateway_id         = "${o.org_name}-${e.env_name}-${s.sub_env_name}-${s.region}-gw-${g.gw_name}"
+            org_name           = o.org_name
+            org_secret         = o.org_secret
+            org_secret_version = o.org_secret_version
+            env_name           = e.env_name
+            sub_env_name       = s.sub_env_name
+            env_key            = "${e.env_name}-${s.sub_env_name}"
+            region_abbr        = local.abbr_region[s.region]
+            region             = s.region
+            project            = s.project
+            vpc                = s.vpc
+            gw_name            = g.gw_name
+            gw_index           = regex("-([0-9]+)$", s.vpc)
+            gw_key             = "gw-${g.gw_name}"
+            asn                = g.asn
+            tunnels = {
+              for t in g.tunnels : tostring(t.interface) => {
+                tunnel_name      = t.tunnel_name
+                tunnel_key       = "tunnel-${t.tunnel_name}"
+                interface        = t.interface
+                bgp_peer_routes  = t.bgp_peer_routes
+                t_secret         = try(var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret, null)
+                t_secret_version = try(var.vpn_preshared_key_1["${t.interface}-${e.env_name}-${s.sub_env_name}"].secret_version, null)
               }
             }
           }
-        ]...)
-      ]...)
-    ]...)
-  ]...)
+        ]
+      ])
+    ])
+  ])
+
+  vpn_details_map = {
+    for gateway in local.vpn_details_list : gateway.gateway_id => gateway
+  }
+
+  gateways_by_env_key = {
+    for env_key in distinct([for gateway in local.vpn_details_list : gateway.env_key]) :
+    env_key => [for gateway in local.vpn_details_list : gateway if gateway.env_key == env_key]
+  }
+
+  env_keys_with_multiple_gateways = [
+    for env_key, gateways in local.gateways_by_env_key : env_key
+    if length(gateways) > 1
+  ]
+
+  single_gateway_by_env_key = {
+    for env_key, gateways in local.gateways_by_env_key : env_key => gateways[0]
+    if length(gateways) == 1
+  }
+
+  gateway_map = {
+    for adjkey, adjval in local.vpn_adj_map : adjkey => {
+      adjacency_key = adjkey
+      peer1_gws     = local.single_gateway_by_env_key[adjval.peer1]
+      peer2_gws     = local.single_gateway_by_env_key[adjval.peer2]
+    }
+    if contains(keys(local.single_gateway_by_env_key), adjval.peer1) && contains(keys(local.single_gateway_by_env_key), adjval.peer2)
+  }
+
+  tunnels_map = {
+    for tunnel_pair in flatten([
+      for adjkey, gateway_pair in local.gateway_map : [
+        for interface, peer1_tunnel in gateway_pair.peer1_gws.tunnels : {
+          key = format(
+            "%s-%s-%s-%s",
+            adjkey,
+            gateway_pair.peer1_gws.gw_name,
+            gateway_pair.peer2_gws.gw_name,
+            interface
+          )
+          adjacency_key               = adjkey
+          peer1_gws                   = gateway_pair.peer1_gws
+          peer2_gws                   = gateway_pair.peer2_gws
+          peer1_tunnels               = peer1_tunnel
+          peer2_tunnels               = gateway_pair.peer2_gws.tunnels[interface]
+          peer1_tunnel_secret         = coalesce(try(peer1_tunnel.t_secret, null), gateway_pair.peer1_gws.org_secret)
+          peer1_tunnel_secret_version = coalesce(try(peer1_tunnel.t_secret_version, null), gateway_pair.peer1_gws.org_secret_version)
+          peer2_tunnel_secret         = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].t_secret, null), gateway_pair.peer2_gws.org_secret)
+          peer2_tunnel_secret_version = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].t_secret_version, null), gateway_pair.peer2_gws.org_secret_version)
+        }
+        if contains(keys(gateway_pair.peer2_gws.tunnels), interface)
+      ]
+      ]) : tunnel_pair.key => {
+      adjacency_key               = tunnel_pair.adjacency_key
+      peer1_gws                   = tunnel_pair.peer1_gws
+      peer2_gws                   = tunnel_pair.peer2_gws
+      peer1_tunnels               = tunnel_pair.peer1_tunnels
+      peer2_tunnels               = tunnel_pair.peer2_tunnels
+      peer1_tunnel_secret         = tunnel_pair.peer1_tunnel_secret
+      peer1_tunnel_secret_version = tunnel_pair.peer1_tunnel_secret_version
+      peer2_tunnel_secret         = tunnel_pair.peer2_tunnel_secret
+      peer2_tunnel_secret_version = tunnel_pair.peer2_tunnel_secret_version
+    }
+  }
+
+  tunnel_keys_with_missing_secret = [
+    for tunnel_key, tunnel in local.tunnels_map : tunnel_key
+    if tunnel.peer1_tunnel_secret == null
+    || tunnel.peer1_tunnel_secret_version == null
+    || tunnel.peer2_tunnel_secret == null
+    || tunnel.peer2_tunnel_secret_version == null
+  ]
 
 }
