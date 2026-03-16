@@ -10,6 +10,10 @@ output "dst_host_project_id" {
   value = module.dst_host_project.project_id
 }
 
+output "secret_project_id" {
+  value = module.project_for_secrets.project_id
+}
+
 output "dst_shared_vpc" {
   value = module.dst_shared_vpc.network
 }

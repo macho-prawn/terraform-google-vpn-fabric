@@ -7,7 +7,15 @@ inspec_version: '>= 2.3.5'
 inputs:
 - name: src_host_project_id
   required: true
-  description: 'The GCP project identifier'
+  description: 'The source GCP project identifier'
+  type: string
+- name: dst_host_project_id
+  required: true
+  description: 'The destination GCP project identifier'
+  type: string
+- name: secret_project_id
+  required: true
+  description: 'The GCP project identifier that stores the VPN secrets'
   type: string
 
 depends:

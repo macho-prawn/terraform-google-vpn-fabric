@@ -4,19 +4,47 @@ summary: An InSpec Compliance Profile For GCP
 version: 0.1.0
 inspec_version: '>= 2.3.5'
 
-# Declare the inputs needed by test cases
 inputs:
-- name: project_id
+- name: src_project_id
   required: true
-  description: 'The GCP project identifier.'
+  description: 'The source GCP project identifier.'
   type: string
-
-Comment: >
-    Declare any other remaining inputs, For example below is the section to declare a bucket name 
-    - name: bucket_name
-    required: true
-    description: 'The GCP project identifier.'
-    type: string
+- name: dst_project_id
+  required: true
+  description: 'The destination GCP project identifier.'
+  type: string
+- name: src_region
+  required: true
+  description: 'The source region.'
+  type: string
+- name: dst_region
+  required: true
+  description: 'The destination region.'
+  type: string
+- name: src_router_name
+  required: true
+  description: 'The expected source Cloud Router name.'
+  type: string
+- name: dst_router_name
+  required: true
+  description: 'The expected destination Cloud Router name.'
+  type: string
+- name: src_gateway_name
+  required: true
+  description: 'The expected source HA VPN gateway name.'
+  type: string
+- name: dst_gateway_name
+  required: true
+  description: 'The expected destination HA VPN gateway name.'
+  type: string
+- name: src_tunnel_names
+  required: true
+  description: 'The expected source VPN tunnel names.'
+  type: array
+- name: dst_tunnel_names
+  required: true
+  description: 'The expected destination VPN tunnel names.'
+  type: array
 
 depends:
 - name: inspec-gcp
