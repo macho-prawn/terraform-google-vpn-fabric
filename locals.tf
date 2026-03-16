@@ -177,16 +177,10 @@ locals {
 
   tunnels_map = {
     for tunnel_pair in flatten([
-      for adjkey, gateway_pair in local.gateway_map : [
+      for gateway_pair_key, gateway_pair in local.gateway_map : [
         for interface, peer1_tunnel in gateway_pair.peer1_gws.tunnels : {
-          key = format(
-            "%s-%s-%s-%s",
-            adjkey,
-            gateway_pair.peer1_gws.gw_name,
-            gateway_pair.peer2_gws.gw_name,
-            interface
-          )
-          adjacency_key               = adjkey
+          key                         = "${gateway_pair_key}-${interface}"
+          adjacency_key               = gateway_pair.adjacency_key
           peer1_gws                   = gateway_pair.peer1_gws
           peer2_gws                   = gateway_pair.peer2_gws
           peer1_tunnels               = peer1_tunnel
