@@ -68,30 +68,30 @@ locals {
             vpc    = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc.name
             gw = [{
               asn     = 4289724416
-              gw_name = "g0-internal-01"
+              gw_name = "dev-edge-01"
               tunnels = [{
                 bgp_peer_routes = ["192.168.1.0/24", "192.168.2.0/24"]
                 interface       = 1
-                tunnel_name     = "g0-internal-01-if1"
+                tunnel_name     = "dev-edge-01-if1"
                 },
                 {
                   bgp_peer_routes = ["192.168.1.0/24"]
                   interface       = 0
-                  tunnel_name     = "g0-internal-01-if0"
+                  tunnel_name     = "dev-edge-01-if0"
               }]
               },
               {
                 asn     = 4289724417
-                gw_name = "g0-internal-02"
+                gw_name = "dev-edge-02"
                 tunnels = [{
                   bgp_peer_routes = ["192.168.3.0/24"]
                   interface       = 1
-                  tunnel_name     = "g0-internal-02-if1"
+                  tunnel_name     = "dev-edge-02-if1"
                   },
                   {
                     bgp_peer_routes = ["192.168.3.0/24"]
                     interface       = 0
-                    tunnel_name     = "g0-internal-02-if0"
+                    tunnel_name     = "dev-edge-02-if0"
                 }]
             }]
           }]

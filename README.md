@@ -1,6 +1,6 @@
 # terraform-google-vpn-fabric
 
-Provision Google Cloud HA VPN gateways, Cloud Routers, tunnels, and BGP peers from a nested Terraform input model. Environment adjacencies stay environment-level, while concrete gateway pairs are matched by shared `gw_name`.
+Provision Google Cloud HA VPN gateways, Cloud Routers, tunnels, and BGP peers from a nested Terraform input model. Environment adjacencies stay environment-level, while concrete gateway pairs are resolved by gateway position within each adjacent environment.
 
 ## Table of Contents
 
@@ -83,7 +83,7 @@ module "vpn_fabric" {
               }
               gw = [
                 {
-                  gw_name = "g0-internal-01"
+                  gw_name = "dev-edge-01"
                   asn     = 64513
                   tunnels = [
                     {
@@ -137,7 +137,7 @@ Important fields:
 - `env[].sub_env[].project.name`: target project ID
 - `env[].sub_env[].project.secret` and `secret_version`: optional project-level fallback for tunnel shared secrets
 - `env[].sub_env[].vpc`: network self-link/name used by the HA VPN gateway and Cloud Router
-- `env[].sub_env[].gw[].gw_name`: gateway name used for pairing across adjacent environments
+- `env[].sub_env[].gw[].gw_name`: gateway identifier used in resource names and outputs
 - `env[].sub_env[].gw[].asn`: local router ASN
 - `env[].sub_env[].gw[].tunnels[]`: interface-specific tunnel definitions
 
@@ -153,7 +153,7 @@ Tunnel fields:
 
 ### `gateways`
 
-Map of resolved gateway pairs keyed by adjacency and `gw_name`. Each value includes the concrete `peer1_gws` and `peer2_gws` objects used to build routers, gateways, and tunnels.
+Map of resolved gateway pairs keyed by adjacency, peer1 gateway name, and peer2 gateway name. Each value includes the concrete `peer1_gws` and `peer2_gws` objects used to build routers, gateways, and tunnels.
 
 ### `router_map`
 
@@ -161,13 +161,13 @@ Map of concrete router definitions keyed by `gateway_key`. Each value includes t
 
 ### `tunnels`
 
-Map of resolved tunnel pairs keyed by adjacency, gateway name, and interface. Each value includes both peer tunnel definitions plus the resolved secret references.
+Map of resolved tunnel pairs keyed by adjacency, both gateway names, and interface. Each value includes both peer tunnel definitions plus the resolved secret references.
 
 ## Validation Rules
 
 - A given `${env_name}-${sub_env_name}` can contain multiple gateways, but each `gw_name` must be unique within that environment key.
-- For any adjacency, gateways are paired only when both sides contain the same `gw_name`.
-- If one side has a `gw_name` with no match on the other side, the module fails validation.
+- For any adjacency, gateways are paired by list position within each environment.
+- Both sides of an adjacency must define the same number of gateways, or the module fails validation.
 - Each tunnel pair must resolve both a secret name and secret version, either from the tunnel or from the parent project block.
 
 ## Naming Behavior
