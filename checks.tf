@@ -5,10 +5,10 @@ check "unique_gateway_names_per_env_key" {
   }
 }
 
-check "matched_gateway_names_per_adjacency" {
+check "paired_gateway_counts_per_adjacency" {
   assert {
-    condition     = length(local.adjacency_keys_with_unmatched_gateways) == 0
-    error_message = "Each adjacency can only pair gateways with matching gw_name values on both sides. Unmatched gateways found for: ${join(", ", local.adjacency_keys_with_unmatched_gateways)}"
+    condition     = length(local.adjacency_keys_with_mismatched_gateway_counts) == 0
+    error_message = "Each adjacency must have the same number of gateways on both sides for positional pairing. Mismatched counts found for: ${join(", ", local.adjacency_keys_with_mismatched_gateway_counts)}"
   }
 }
 
