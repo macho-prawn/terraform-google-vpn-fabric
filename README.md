@@ -1,6 +1,6 @@
 # terraform-google-vpn-fabric
 
-Provision Google Cloud HA VPN gateways, Cloud Routers, tunnels, and BGP peers from a nested Terraform input model. Environment adjacencies stay environment-level, while concrete gateway pairs are resolved by gateway position within each adjacent environment.
+Provision Google Cloud HA VPN gateways, Cloud Routers, tunnels, and BGP peers from a nested Terraform input model. Gateway inventory stays nested under environments, while tunnel pairing is expressed explicitly per tunnel and `vpn_adjacency` provides source-to-destination direction.
 
 ## Table of Contents
 
@@ -52,18 +52,30 @@ module "vpn_fabric" {
                 {
                   gw_name = "g0-internal-01"
                   asn     = 64512
-                  tunnels = [
-                    {
+                  tunnels = {
+                    dev_g0_if0 = {
                       tunnel_name     = "if0"
                       interface       = 0
                       bgp_peer_routes = ["10.10.0.0/24"]
-                    },
-                    {
+                      peer = {
+                        env_name     = "dev"
+                        sub_env_name = "g0"
+                        gw_name      = "dev-edge-01"
+                        tunnel_key   = "ctl_if0"
+                      }
+                    }
+                    dev_g0_if1 = {
                       tunnel_name     = "if1"
                       interface       = 1
                       bgp_peer_routes = ["10.10.1.0/24", "10.10.2.0/24"]
+                      peer = {
+                        env_name     = "dev"
+                        sub_env_name = "g0"
+                        gw_name      = "dev-edge-01"
+                        tunnel_key   = "ctl_if1"
+                      }
                     }
-                  ]
+                  }
                 }
               ]
             }
@@ -85,18 +97,30 @@ module "vpn_fabric" {
                 {
                   gw_name = "dev-edge-01"
                   asn     = 64513
-                  tunnels = [
-                    {
+                  tunnels = {
+                    ctl_if0 = {
                       tunnel_name     = "if0"
                       interface       = 0
                       bgp_peer_routes = ["192.168.10.0/24"]
-                    },
-                    {
+                      peer = {
+                        env_name     = "ctl"
+                        sub_env_name = "native"
+                        gw_name      = "g0-internal-01"
+                        tunnel_key   = "dev_g0_if0"
+                      }
+                    }
+                    ctl_if1 = {
                       tunnel_name     = "if1"
                       interface       = 1
                       bgp_peer_routes = ["192.168.11.0/24", "192.168.12.0/24"]
+                      peer = {
+                        env_name     = "ctl"
+                        sub_env_name = "native"
+                        gw_name      = "g0-internal-01"
+                        tunnel_key   = "dev_g0_if1"
+                      }
                     }
-                  ]
+                  }
                 }
               ]
             }
@@ -139,7 +163,7 @@ Important fields:
 - `env[].sub_env[].vpc`: network self-link/name used by the HA VPN gateway and Cloud Router
 - `env[].sub_env[].gw[].gw_name`: gateway identifier used in resource names and outputs
 - `env[].sub_env[].gw[].asn`: local router ASN
-- `env[].sub_env[].gw[].tunnels[]`: interface-specific tunnel definitions
+- `env[].sub_env[].gw[].tunnels`: map of tunnel definitions keyed by a stable local tunnel key
 
 Tunnel fields:
 
@@ -148,6 +172,10 @@ Tunnel fields:
 - `bgp_peer_routes`: one or more CIDRs as `list(string)`
 - optional `secret`
 - optional `secret_version`
+- `peer.env_name`
+- `peer.sub_env_name`
+- `peer.gw_name`
+- `peer.tunnel_key`
 
 ## Outputs
 
@@ -161,12 +189,15 @@ Map of concrete router definitions keyed by `gateway_key`. Each value includes t
 
 ### `tunnels`
 
-Map of resolved tunnel pairs keyed by adjacency, both gateway names, and interface. Each value includes both peer tunnel definitions plus the resolved secret references.
+Map of resolved tunnel pairs keyed by the explicit source tunnel lookup key and remote tunnel lookup key. Each value includes both peer tunnel definitions plus the resolved secret references.
 
 ## Validation Rules
 
 - A given `${env_name}-${sub_env_name}` can contain multiple gateways, but each `gw_name` must be unique within that environment key.
-- Both sides of an adjacency must define the same number of gateways, or the module fails validation.
+- Every tunnel peer reference must resolve to an existing remote tunnel and be declared reciprocally.
+- Every reciprocal tunnel pair must match exactly one directed `vpn_adjacency` edge.
+- Every tunnel endpoint can be targeted by at most one remote tunnel.
+- Paired tunnels must use the same interface.
 - Each tunnel pair must resolve both a secret name and secret version, either from the tunnel or from the parent project block.
 
 ## Naming Behavior
@@ -215,7 +246,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_vpn_adjacency"></a> [vpn\_adjacency](#input\_vpn\_adjacency) | A map of all the source/destination workload/environments | `map(list(string))` | <pre>{<br>  "ctl-native": [<br>    "dev-g0",<br>    "dev-native",<br>    "dev-dws",<br>    "uat-native",<br>    "uat-dws",<br>    "prd-native",<br>    "prd-dws"<br>  ],<br>  "dev-g0": [<br>    "dev-g0-dms",<br>    "dev-g0-vpc02"<br>  ],<br>  "dev-native": [<br>    "dev-vpc02",<br>    "dev-dws",<br>    "dev-dms"<br>  ],<br>  "prd-native": [<br>    "prd-vpc02",<br>    "prd-dws",<br>    "prd-dms"<br>  ],<br>  "tfe-prd": [<br>    "prd-native"<br>  ],<br>  "tfe-preprd-zeus": [<br>    "prd-native"<br>  ],<br>  "tfe-sparta": [<br>    "dev-native"<br>  ],<br>  "uat-native": [<br>    "uat-vpc02",<br>    "uat-dws",<br>    "uat-02",<br>    "uat-dms"<br>  ]<br>}</pre> | no |
-| <a name="input_vpn_env_details"></a> [vpn\_env\_details](#input\_vpn\_env\_details) | A map of all the Src/Dst HA VPN GW/Tunnels | <pre>list(object({<br>    org_name = string<br>    env = list(object({<br>      env_name = string<br>      sub_env = list(object({<br>        sub_env_name = string<br>        region       = string<br>        project = object({<br>          name           = string<br>          secret         = optional(string, null)<br>          secret_version = optional(string, null)<br>        })<br>        vpc = string<br>        gw = list(object({<br>          gw_name = string<br>          asn     = number<br>          tunnels = list(object({<br>            tunnel_name     = string<br>            interface       = number<br>            bgp_peer_routes = list(string)<br>            secret          = optional(string, null)<br>            secret_version  = optional(string, null)<br>          }))<br>        }))<br>      }))<br>    }))<br>  }))</pre> | `[]` | no |
+| <a name="input_vpn_env_details"></a> [vpn\_env\_details](#input\_vpn\_env\_details) | A map of all the Src/Dst HA VPN GW/Tunnels | <pre>list(object({<br>    org_name = string<br>    env = list(object({<br>      env_name = string<br>      sub_env = list(object({<br>        sub_env_name = string<br>        region       = string<br>        project = object({<br>          name           = string<br>          secret         = optional(string, null)<br>          secret_version = optional(string, null)<br>        })<br>        vpc = string<br>        gw = list(object({<br>          gw_name = string<br>          asn     = number<br>          tunnels = map(object({<br>            tunnel_name     = string<br>            interface       = number<br>            bgp_peer_routes = list(string)<br>            secret          = optional(string, null)<br>            secret_version  = optional(string, null)<br>            peer = object({<br>              env_name     = string<br>              sub_env_name = string<br>              gw_name      = string<br>              tunnel_key   = string<br>            })<br>          }))<br>        }))<br>      }))<br>    }))<br>  }))</pre> | `[]` | no |
 
 ## Outputs
 

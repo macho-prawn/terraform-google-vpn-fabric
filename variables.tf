@@ -30,12 +30,18 @@ variable "vpn_env_details" {
         gw = list(object({
           gw_name = string
           asn     = number
-          tunnels = list(object({
+          tunnels = map(object({
             tunnel_name     = string
             interface       = number
             bgp_peer_routes = list(string)
             secret          = optional(string, null)
             secret_version  = optional(string, null)
+            peer = object({
+              env_name     = string
+              sub_env_name = string
+              gw_name      = string
+              tunnel_key   = string
+            })
           }))
         }))
       }))
