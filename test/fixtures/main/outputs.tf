@@ -23,12 +23,12 @@ locals {
 
   src_tunnel_names = sort([
     for tunnel in values(module.vpn_infra.tunnels) :
-    "tunnel-${tunnel.peer1_gws.env_name}-${tunnel.peer1_gws.gw_index[0]}-${tunnel.peer1_gws.region_abbr}-${tunnel.peer1_gws.gw_name}-${tunnel.peer1_tunnels.tunnel_name}"
+    "tunnel-${tunnel.peer1_gws.env_name}-${tunnel.peer1_gws.gw_index[0]}-${tunnel.peer1_gws.region_abbr}-${tunnel.peer1_tunnels.tunnel_name}"
   ])
 
   dst_tunnel_names = sort([
     for tunnel in values(module.vpn_infra.tunnels) :
-    "tunnel-${tunnel.peer2_gws.env_name}-${tunnel.peer2_gws.gw_index[0]}-${tunnel.peer2_gws.region_abbr}-${tunnel.peer2_gws.gw_name}-${tunnel.peer2_tunnels.tunnel_name}"
+    "tunnel-${tunnel.peer2_gws.env_name}-${tunnel.peer2_gws.gw_index[0]}-${tunnel.peer2_gws.region_abbr}-${tunnel.peer2_tunnels.tunnel_name}"
   ])
 }
 

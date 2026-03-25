@@ -87,7 +87,7 @@ locals {
     for gateway in local.vpn_details_list : gateway.gateway_key => gateway
   }
 
-  router_map = {
+  routers_map = {
     for gateway_key, gateway in local.vpn_details_map : gateway_key => {
       gateway_key  = gateway_key
       env_key      = gateway.env_key
@@ -138,7 +138,7 @@ locals {
     if length(lookup(local.gateways_by_env_key, adjval.peer1, [])) != length(lookup(local.gateways_by_env_key, adjval.peer2, []))
   ]
 
-  gateway_map = {
+  gateways_map = {
     for gateway_pair in flatten([
       for adjkey, adjval in local.vpn_adj_map : [
         for index in range(length(lookup(local.gateways_by_env_key, adjval.peer1, []))) : {
@@ -158,18 +158,18 @@ locals {
 
   tunnels_map = {
     for tunnel_pair in flatten([
-      for gateway_pair_key, gateway_pair in local.gateway_map : [
+      for gateway_pair_key, gateway_pair in local.gateways_map : [
         for interface, peer1_tunnel in gateway_pair.peer1_gws.tunnels : {
-          key                         = "${gateway_pair_key}-${interface}"
+          key                         = "${gateway_pair.peer1_gws.gateway_id}-t-${peer1_tunnel.tunnel_name}-${interface}"
           adjacency_key               = gateway_pair.adjacency_key
           peer1_gws                   = gateway_pair.peer1_gws
           peer2_gws                   = gateway_pair.peer2_gws
           peer1_tunnels               = peer1_tunnel
           peer2_tunnels               = gateway_pair.peer2_gws.tunnels[interface]
-          peer1_tunnel_secret         = coalesce(try(peer1_tunnel.tunnel_secret, null), gateway_pair.peer1_gws.project_secret)
-          peer1_tunnel_secret_version = coalesce(try(peer1_tunnel.tunnel_secret_version, null), gateway_pair.peer1_gws.project_secret_version)
-          peer2_tunnel_secret         = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].tunnel_secret, null), gateway_pair.peer2_gws.project_secret)
-          peer2_tunnel_secret_version = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].tunnel_secret_version, null), gateway_pair.peer2_gws.project_secret_version)
+          peer1_tunnel_secret         = coalesce(try(peer1_tunnel.tunnel_secret, null), try(gateway_pair.peer1_gws.project_secret, null), "empty")
+          peer1_tunnel_secret_version = coalesce(try(peer1_tunnel.tunnel_secret_version, null), try(gateway_pair.peer1_gws.project_secret_version, null), "empty")
+          peer2_tunnel_secret         = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].tunnel_secret, null), try(gateway_pair.peer2_gws.project_secret, null), "empty")
+          peer2_tunnel_secret_version = coalesce(try(gateway_pair.peer2_gws.tunnels[interface].tunnel_secret_version, null), try(gateway_pair.peer2_gws.project_secret_version, null), "empty")
         }
         if contains(keys(gateway_pair.peer2_gws.tunnels), interface)
       ]
@@ -196,6 +196,7 @@ locals {
     || tunnel.peer2_tunnel_secret == ""
     || tunnel.peer2_tunnel_secret_version == null
     || tunnel.peer2_tunnel_secret_version == ""
+    || (tunnel.peer1_tunnel_secret == "empty" && tunnel.peer1_tunnel_secret_version == "empty")
+    || (tunnel.peer2_tunnel_secret == "empty" && tunnel.peer2_tunnel_secret_version == "empty")
   ]
-
 }

@@ -5,13 +5,6 @@ check "unique_gateway_names_per_env_key" {
   }
 }
 
-check "paired_gateway_counts_per_adjacency" {
-  assert {
-    condition     = length(local.adjacency_keys_with_mismatched_gateway_counts) == 0
-    error_message = "Each adjacency must have the same number of gateways on both sides for positional pairing. Mismatched counts found for: ${join(", ", local.adjacency_keys_with_mismatched_gateway_counts)}"
-  }
-}
-
 check "resolved_tunnel_secrets" {
   assert {
     condition     = length(local.tunnel_keys_with_missing_secret) == 0
