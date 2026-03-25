@@ -261,12 +261,14 @@ locals {
   }
 
   gateways_map = {
-    for gateway_pair in values(local.tunnels_map) :
-    "${gateway_pair.adjacency_key}-${gateway_pair.peer1_gws.gw_name}-${gateway_pair.peer2_gws.gw_name}" => {
-      adjacency_key = gateway_pair.adjacency_key
-      peer1_gws     = gateway_pair.peer1_gws
-      peer2_gws     = gateway_pair.peer2_gws
-    }
+    for gateway_key, gateway_group in {
+      for gateway_pair in values(local.tunnels_map) :
+      "${gateway_pair.adjacency_key}-${gateway_pair.peer1_gws.gw_name}-${gateway_pair.peer2_gws.gw_name}" => {
+        adjacency_key = gateway_pair.adjacency_key
+        peer1_gws     = gateway_pair.peer1_gws
+        peer2_gws     = gateway_pair.peer2_gws
+      }...
+    } : gateway_key => gateway_group[0]
   }
 
   tunnel_keys_with_missing_secret = [
