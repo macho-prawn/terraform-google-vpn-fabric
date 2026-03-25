@@ -3,9 +3,9 @@ output "tunnels" {
 }
 
 output "gateways" {
-  value = local.gateway_map
+  value = local.gateways_map
 }
 
 output "router_map" {
-  value = local.router_map
+  value = local.routers_map
 }

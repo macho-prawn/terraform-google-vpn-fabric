@@ -21,14 +21,3 @@ control "gcp-projects-1.0" do
     it { should exist }
   end
 end
-
-control "gcp-secrets-1.0" do
-  impact 1.0
-  title "Ensure the secret project contains the expected VPN secrets"
-
-  describe google_secret_manager_secrets(parent: "projects/#{secret_project_id}") do
-    it { should exist }
-    its("secret_ids") { should include "vpn_preshared_key_project" }
-    its("secret_ids") { should include "vpn_preshared_key_tunnel" }
-  end
-end

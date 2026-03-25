@@ -5,10 +5,45 @@ check "unique_gateway_names_per_env_key" {
   }
 }
 
-check "paired_gateway_counts_per_adjacency" {
+check "tunnel_peer_targets_exist" {
   assert {
-    condition     = length(local.adjacency_keys_with_mismatched_gateway_counts) == 0
-    error_message = "Each adjacency must have the same number of gateways on both sides for positional pairing. Mismatched counts found for: ${join(", ", local.adjacency_keys_with_mismatched_gateway_counts)}"
+    condition     = length(local.tunnel_link_missing_peer_targets) == 0
+    error_message = "Each tunnel peer reference must resolve to an existing remote tunnel. Missing peer targets for: ${join(", ", local.tunnel_link_missing_peer_targets)}"
+  }
+}
+
+check "tunnel_peer_links_are_reciprocal" {
+  assert {
+    condition     = length(local.tunnel_link_reciprocity_mismatches) == 0
+    error_message = "Each tunnel pair must declare reciprocal peer references. Reciprocity mismatches for: ${join(", ", local.tunnel_link_reciprocity_mismatches)}"
+  }
+}
+
+check "tunnel_peer_targets_are_unique" {
+  assert {
+    condition     = length(local.tunnel_peer_targets_with_multiple_sources) == 0
+    error_message = "Each tunnel endpoint may be targeted by at most one remote tunnel. Conflicting targets: ${join(", ", local.tunnel_peer_targets_with_multiple_sources)}"
+  }
+}
+
+check "tunnel_pairs_match_declared_adjacency" {
+  assert {
+    condition     = length(local.tunnel_link_adjacency_errors) == 0
+    error_message = "Each reciprocal tunnel pair must match a declared vpn_adjacency in one direction. Missing adjacency for: ${join(", ", local.tunnel_link_adjacency_errors)}"
+  }
+}
+
+check "tunnel_pairs_have_unambiguous_direction" {
+  assert {
+    condition     = length(local.tunnel_link_ambiguous_adjacency) == 0
+    error_message = "Each reciprocal tunnel pair must match vpn_adjacency in exactly one direction. Ambiguous adjacency for: ${join(", ", local.tunnel_link_ambiguous_adjacency)}"
+  }
+}
+
+check "tunnel_pair_interfaces_match" {
+  assert {
+    condition     = length(local.tunnel_link_interface_mismatches) == 0
+    error_message = "Paired tunnels must use the same interface. Interface mismatches for: ${join(", ", local.tunnel_link_interface_mismatches)}"
   }
 }
 

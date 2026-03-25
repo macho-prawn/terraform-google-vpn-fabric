@@ -48,7 +48,7 @@ inputs:
 
 depends:
 - name: inspec-gcp
-  url: https://github.com/inspec/inspec-gcp/archive/v1.8.0.zip
+  url: https://github.com/inspec/inspec-gcp/archive/v1.11.136.zip
 
 supports:
 - platform: gcp

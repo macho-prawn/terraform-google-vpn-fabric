@@ -21,7 +21,7 @@ resource "google_compute_ha_vpn_gateway" "gateway" {
 resource "google_compute_vpn_tunnel" "peer1_tunnel_0" {
   for_each = { for k, t in local.tunnels_map : k => t if t.peer1_tunnels.interface == 0 }
 
-  name                     = "tunnel-${each.value.peer1_gws.env_name}-${each.value.peer1_gws.gw_index[0]}-${each.value.peer1_gws.region_abbr}-${each.value.peer1_gws.gw_name}-${each.value.peer1_tunnels.tunnel_name}"
+  name                     = "tunnel-${each.value.peer1_gws.env_name}-${each.value.peer1_gws.gw_index[0]}-${each.value.peer1_gws.region_abbr}-${each.value.peer1_tunnels.tunnel_name}"
   project                  = each.value.peer1_gws.project
   shared_secret_wo         = ephemeral.google_secret_manager_secret_version.peer1_vpn_preshared_key[each.key].secret_data
   shared_secret_wo_version = each.value.peer1_tunnel_secret_version
@@ -36,7 +36,7 @@ resource "google_compute_vpn_tunnel" "peer1_tunnel_0" {
 resource "google_compute_vpn_tunnel" "peer2_tunnel_0" {
   for_each = { for k, t in local.tunnels_map : k => t if t.peer2_tunnels.interface == 0 }
 
-  name                     = "tunnel-${each.value.peer2_gws.env_name}-${each.value.peer2_gws.gw_index[0]}-${each.value.peer2_gws.region_abbr}-${each.value.peer2_gws.gw_name}-${each.value.peer2_tunnels.tunnel_name}"
+  name                     = "tunnel-${each.value.peer2_gws.env_name}-${each.value.peer2_gws.gw_index[0]}-${each.value.peer2_gws.region_abbr}-${each.value.peer2_tunnels.tunnel_name}"
   project                  = each.value.peer2_gws.project
   shared_secret_wo         = ephemeral.google_secret_manager_secret_version.peer2_vpn_preshared_key[each.key].secret_data
   shared_secret_wo_version = each.value.peer2_tunnel_secret_version
@@ -51,7 +51,7 @@ resource "google_compute_vpn_tunnel" "peer2_tunnel_0" {
 resource "google_compute_vpn_tunnel" "peer1_tunnel_1" {
   for_each = { for k, t in local.tunnels_map : k => t if t.peer1_tunnels.interface == 1 }
 
-  name                     = "tunnel-${each.value.peer1_gws.env_name}-${each.value.peer1_gws.gw_index[0]}-${each.value.peer1_gws.region_abbr}-${each.value.peer1_gws.gw_name}-${each.value.peer1_tunnels.tunnel_name}"
+  name                     = "tunnel-${each.value.peer1_gws.env_name}-${each.value.peer1_gws.gw_index[0]}-${each.value.peer1_gws.region_abbr}-${each.value.peer1_tunnels.tunnel_name}"
   project                  = each.value.peer1_gws.project
   shared_secret_wo         = ephemeral.google_secret_manager_secret_version.peer1_vpn_preshared_key[each.key].secret_data
   shared_secret_wo_version = each.value.peer1_tunnel_secret_version
@@ -69,7 +69,7 @@ resource "google_compute_vpn_tunnel" "peer1_tunnel_1" {
 resource "google_compute_vpn_tunnel" "peer2_tunnel_1" {
   for_each = { for k, t in local.tunnels_map : k => t if t.peer2_tunnels.interface == 1 }
 
-  name                     = "tunnel-${each.value.peer2_gws.env_name}-${each.value.peer2_gws.gw_index[0]}-${each.value.peer2_gws.region_abbr}-${each.value.peer2_gws.gw_name}-${each.value.peer2_tunnels.tunnel_name}"
+  name                     = "tunnel-${each.value.peer2_gws.env_name}-${each.value.peer2_gws.gw_index[0]}-${each.value.peer2_gws.region_abbr}-${each.value.peer2_tunnels.tunnel_name}"
   project                  = each.value.peer2_gws.project
   shared_secret_wo         = ephemeral.google_secret_manager_secret_version.peer2_vpn_preshared_key[each.key].secret_data
   shared_secret_wo_version = each.value.peer2_tunnel_secret_version

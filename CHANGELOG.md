@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
-## [1.0.0] - 2026-03-16
+## [1.0.0] - 2026-03-16 [CLPDRM-16858](https://dbatlas.db.com/jira02/browse/CLPDRM-16858)
 
 ### Added
 
@@ -14,13 +14,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added support for one or more advertised BGP peer route CIDRs per tunnel via `bgp_peer_routes = list(string)`.
 - Added outputs for resolved gateway pairs and tunnel pairs.
 - Added a `router_map` output keyed by `gateway_key` for resolved router metadata.
-- Added validation to ensure each `gw_name` is unique within an environment key.
-- Added validation to ensure environment adjacencies only resolve gateway pairs with matching `gw_name` values.
 - Added validation to ensure each tunnel pair resolves both a secret name and secret version.
 
 ### Changed
 
-- Changed gateway resolution from single-gateway-per-environment to same-`gw_name` pairing across adjacent environments.
 - Changed router and HA VPN gateway resources to be created once per concrete gateway instead of once per adjacency.
 - Changed tunnel naming to include `gw_name` to avoid collisions when multiple gateways exist in the same environment.
 - Changed the documented module contract to center on Terraform `>= 1.12.0`, `hashicorp/google`, `vpn_adjacency` as `map(list(string))`, and `vpn_env_details` as the nested environment, project, gateway, and tunnel definition model.
