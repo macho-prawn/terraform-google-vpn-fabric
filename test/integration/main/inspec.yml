@@ -9,41 +9,25 @@ inputs:
   required: true
   description: 'The source GCP project identifier.'
   type: string
-- name: dst_project_id
+- name: dst_projects
   required: true
-  description: 'The destination GCP project identifier.'
-  type: string
+  description: 'Destination GCP resources grouped by project identifier.'
+  type: hash
 - name: src_region
   required: true
   description: 'The source region.'
-  type: string
-- name: dst_region
-  required: true
-  description: 'The destination region.'
   type: string
 - name: src_router_names
   required: true
   description: 'The expected source Cloud Router names.'
   type: array
-- name: dst_router_names
-  required: true
-  description: 'The expected destination Cloud Router names.'
-  type: array
 - name: src_gateway_names
   required: true
   description: 'The expected source HA VPN gateway names.'
   type: array
-- name: dst_gateway_names
-  required: true
-  description: 'The expected destination HA VPN gateway names.'
-  type: array
 - name: src_tunnel_names
   required: true
   description: 'The expected source VPN tunnel names.'
-  type: array
-- name: dst_tunnel_names
-  required: true
-  description: 'The expected destination VPN tunnel names.'
   type: array
 
 depends:
