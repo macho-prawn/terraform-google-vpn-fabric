@@ -20,15 +20,15 @@ variable "vpn_env_details" {
       env_name = string
       sub_env = list(object({
         sub_env_name = string
-        region       = string
         project = object({
           name           = string
           secret         = optional(string, null)
           secret_version = optional(string, null)
         })
-        vpc = string
         gw = list(object({
           gw_name = string
+          region  = string
+          vpc     = string
           asn     = number
           tunnels = map(object({
             tunnel_name     = string

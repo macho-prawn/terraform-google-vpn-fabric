@@ -9,11 +9,11 @@ locals {
           project = {
             name = data.terraform_remote_state.sensitive_state.outputs.src_host_project_id
           }
-          region = "europe-west3"
-          vpc    = data.terraform_remote_state.sensitive_state.outputs.src_shared_vpc.name
           gw = [{
-            asn     = 4288348160
             gw_name = "native-internal-01"
+            region  = "europe-west3"
+            vpc     = data.terraform_remote_state.sensitive_state.outputs.src_shared_vpc.name
+            asn     = 4288348160
             tunnels = {
               dev_g0_if1 = {
                 bgp_peer_routes = ["10.1.1.0/24"]
@@ -158,11 +158,11 @@ locals {
               secret         = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_project.secret
               secret_version = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_project.secret_version
             }
-            region = "europe-west3"
-            vpc    = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_1.name
             gw = [{
-              asn     = 4289724416
               gw_name = "g0-internal-01"
+              region  = "europe-west3"
+              vpc     = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_1.name
+              asn     = 4289724416
               tunnels = {
                 src_if1 = {
                   bgp_peer_routes = ["192.168.1.0/24", "192.168.2.0/24"]
@@ -197,11 +197,11 @@ locals {
             project = {
               name = data.terraform_remote_state.sensitive_state.outputs.dst_host_project_id_2
             }
-            region = "europe-west3"
-            vpc    = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_2.name
             gw = [{
-              asn     = 4289724416
               gw_name = "native-internal-01"
+              region  = "europe-west3"
+              vpc     = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_2.name
+              asn     = 4289724416
               tunnels = {
                 src_if1 = {
                   bgp_peer_routes = ["192.168.3.0/24", "192.168.4.0/24", "192.168.5.0/24", "192.168.6.0/24"]
@@ -242,11 +242,11 @@ locals {
               secret         = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_project.secret
               secret_version = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_project.secret_version
             }
-            region = "europe-west3"
-            vpc    = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_3.name
             gw = [{
-              asn     = 4289724416
               gw_name = "dws-native-internal-01"
+              region  = "europe-west3"
+              vpc     = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_3.name
+              asn     = 4289724416
               tunnels = {
                 src_if1 = {
                   bgp_peer_routes = ["192.168.7.0/24", "192.168.8.0/24", "192.168.9.0/24", "192.168.10.0/24", "192.168.11.0/24"]
@@ -281,11 +281,11 @@ locals {
             project = {
               name = data.terraform_remote_state.sensitive_state.outputs.dst_host_project_id_4
             }
-            region = "europe-west3"
-            vpc    = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_4.name
             gw = [{
-              asn     = 4289724416
               gw_name = "native-internal-01"
+              region  = "europe-west3"
+              vpc     = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_4.name
+              asn     = 4289724416
               tunnels = {
                 src_if1 = {
                   bgp_peer_routes = ["192.168.12.0/24", "192.168.13.0/24"]
@@ -326,11 +326,11 @@ locals {
               secret         = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_project.secret
               secret_version = data.terraform_remote_state.sensitive_state.outputs.vpn_preshared_key_project.secret_version
             }
-            region = "europe-west3"
-            vpc    = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_5.name
             gw = [{
-              asn     = 4289724416
               gw_name = "dws-native-internal-01"
+              region  = "europe-west3"
+              vpc     = data.terraform_remote_state.sensitive_state.outputs.dst_shared_vpc_5.name
+              asn     = 4289724416
               tunnels = {
                 src_if1 = {
                   bgp_peer_routes = ["192.168.15.0/24", "192.168.16.0/24"]
