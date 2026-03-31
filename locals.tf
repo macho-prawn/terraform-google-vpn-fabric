@@ -42,21 +42,21 @@ locals {
       for e in o.env : flatten([
         for s in e.sub_env : [
           for g in s.gw : {
-            gateway_id             = "${o.org_name}-${e.env_name}-${s.sub_env_name}-${s.region}-gw-${g.gw_name}"
+            gateway_id             = "${o.org_name}-${e.env_name}-${s.sub_env_name}-${g.region}-gw-${g.gw_name}"
             gateway_key            = "${e.env_name}-${s.sub_env_name}-${g.gw_name}"
             gateway_lookup_key     = "${e.env_name}-${s.sub_env_name}:${g.gw_name}"
             org_name               = o.org_name
             env_name               = e.env_name
             sub_env_name           = s.sub_env_name
             env_key                = "${e.env_name}-${s.sub_env_name}"
-            region_abbr            = local.abbr_region[s.region]
-            region                 = s.region
+            region_abbr            = local.abbr_region[g.region]
+            region                 = g.region
             project                = s.project.name
             project_secret         = try(s.project.secret, null)
             project_secret_version = try(s.project.secret_version, null)
-            vpc                    = s.vpc
+            vpc                    = g.vpc
             gw_name                = g.gw_name
-            gw_index               = regex("-([0-9]+)$", s.vpc)
+            gw_index               = regex("-([0-9]+)$", g.vpc)
             gw_key                 = "gw-${g.gw_name}"
             asn                    = g.asn
             tunnels = {
@@ -244,6 +244,11 @@ locals {
     if contains(keys(local.tunnel_inventory_map), tunnel.peer_tunnel_lookup_key)
     && local.tunnel_inventory_map[tunnel.peer_tunnel_lookup_key].peer_tunnel_lookup_key == tunnel.tunnel_lookup_key
     && contains(lookup(var.vpn_adjacency, tunnel.env_key, []), tunnel.peer_env_key)
+  ]
+
+  tunnel_link_region_mismatches = [
+    for tunnel_pair in local.tunnel_pairs_list : tunnel_pair.key
+    if tunnel_pair.peer1_gws.region != tunnel_pair.peer2_gws.region
   ]
 
   tunnels_map = {

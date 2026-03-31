@@ -5,30 +5,14 @@ version: 0.1.0
 inspec_version: '>= 2.3.5'
 
 inputs:
-- name: src_project_id
-  required: true
-  description: 'The source GCP project identifier.'
-  type: string
 - name: dst_projects
   required: true
-  description: 'Destination GCP resources grouped by project identifier.'
+  description: 'Destination GCP resources grouped by project and region.'
   type: hash
-- name: src_region
+- name: src_projects
   required: true
-  description: 'The source region.'
-  type: string
-- name: src_router_names
-  required: true
-  description: 'The expected source Cloud Router names.'
-  type: array
-- name: src_gateway_names
-  required: true
-  description: 'The expected source HA VPN gateway names.'
-  type: array
-- name: src_tunnel_names
-  required: true
-  description: 'The expected source VPN tunnel names.'
-  type: array
+  description: 'Source GCP resources grouped by project and region.'
+  type: hash
 
 depends:
 - name: inspec-gcp

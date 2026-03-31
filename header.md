@@ -41,8 +41,6 @@ module "vpn_fabric" {
           sub_env = [
             {
               sub_env_name = "native"
-              region       = "europe-west3"
-              vpc          = "projects/example/global/networks/ctl-native-vpc-01"
               project = {
                 name           = "ctl-host-project"
                 secret         = "vpn-shared-secret"
@@ -51,6 +49,8 @@ module "vpn_fabric" {
               gw = [
                 {
                   gw_name = "g0-internal-01"
+                  region  = "europe-west3"
+                  vpc     = "projects/example/global/networks/ctl-native-vpc-01"
                   asn     = 64512
                   tunnels = {
                     dev_g0_if0 = {
@@ -86,8 +86,6 @@ module "vpn_fabric" {
           sub_env = [
             {
               sub_env_name = "g0"
-              region       = "europe-west3"
-              vpc          = "projects/example/global/networks/dev-g0-vpc-01"
               project = {
                 name           = "dev-host-project"
                 secret         = "vpn-shared-secret"
@@ -96,6 +94,8 @@ module "vpn_fabric" {
               gw = [
                 {
                   gw_name = "dev-edge-01"
+                  region  = "europe-west3"
+                  vpc     = "projects/example/global/networks/dev-g0-vpc-01"
                   asn     = 64513
                   tunnels = {
                     ctl_if0 = {
@@ -157,11 +157,11 @@ Important fields:
 - `org_name`: top-level organization label for the environment set
 - `env[].env_name`: environment name
 - `env[].sub_env[].sub_env_name`: sub-environment name
-- `env[].sub_env[].region`: GCP region for the gateway/router resources
 - `env[].sub_env[].project.name`: target project ID
 - `env[].sub_env[].project.secret` and `secret_version`: optional project-level fallback for tunnel shared secrets
-- `env[].sub_env[].vpc`: network self-link/name used by the HA VPN gateway and Cloud Router
 - `env[].sub_env[].gw[].gw_name`: gateway identifier used in resource names and outputs
+- `env[].sub_env[].gw[].region`: GCP region for this gateway and its router/tunnels
+- `env[].sub_env[].gw[].vpc`: network self-link/name used by this gateway and router
 - `env[].sub_env[].gw[].asn`: local router ASN
 - `env[].sub_env[].gw[].tunnels`: map of tunnel definitions keyed by a stable local tunnel key
 
@@ -198,6 +198,7 @@ Map of resolved tunnel pairs keyed by the explicit source tunnel lookup key and 
 - Every reciprocal tunnel pair must match exactly one directed `vpn_adjacency` edge.
 - Every tunnel endpoint can be targeted by at most one remote tunnel.
 - Paired tunnels must use the same interface.
+- Paired source and destination VPN gateways must use the same region.
 - Each tunnel pair must resolve both a secret name and secret version, either from the tunnel or from the parent project block.
 
 ## Naming Behavior

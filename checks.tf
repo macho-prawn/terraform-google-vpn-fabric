@@ -47,6 +47,13 @@ check "tunnel_pair_interfaces_match" {
   }
 }
 
+check "tunnel_pair_regions_match" {
+  assert {
+    condition     = length(local.tunnel_link_region_mismatches) == 0
+    error_message = "Paired VPN gateways must use the same region. Region mismatches for: ${join(", ", local.tunnel_link_region_mismatches)}"
+  }
+}
+
 check "resolved_tunnel_secrets" {
   assert {
     condition     = length(local.tunnel_keys_with_missing_secret) == 0
@@ -57,9 +64,15 @@ check "resolved_tunnel_secrets" {
 resource "null_resource" "resolved_tunnel_secrets_guard" {
   triggers = {
     missing_tunnel_keys = join(",", local.tunnel_keys_with_missing_secret)
+    region_mismatch_keys = join(",", local.tunnel_link_region_mismatches)
   }
 
   lifecycle {
+    precondition {
+      condition     = length(local.tunnel_link_region_mismatches) == 0
+      error_message = "Paired VPN gateways must use the same region. Region mismatches for: ${join(", ", local.tunnel_link_region_mismatches)}"
+    }
+
     precondition {
       condition     = length(local.tunnel_keys_with_missing_secret) == 0
       error_message = "Each tunnel pair must resolve both secret name and version via tunnel-level or project-level configuration. Missing secrets for: ${join(", ", local.tunnel_keys_with_missing_secret)}"
